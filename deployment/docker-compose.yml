@@ -1,0 +1,26 @@
+version: "3"
+services:
+  myappdb:
+    image: postgres:15-bullseye
+    environment:
+      POSTGRES_USER: mysampleuser
+      POSTGRES_PASSWORD: mysamplepwd
+      POSTGRES_DB: mysampledb
+    ports:
+      - 33032:5432
+      # - 33033:5433
+    volumes:
+      - C:\prac\try_proj_002\deployment\postgres-db:/var/lib/postgresql/data
+    networks:
+      - myappnetwork
+    # command: -p 5433
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 33080:8080
+    networks:
+      - myappnetwork
+networks:
+  myappnetwork:

@@ -1,0 +1,4 @@
+__pycache__/
+
+deployment/postgres-db
+.venv

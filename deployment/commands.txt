@@ -1,0 +1,25 @@
+docker run -it --rm --network deployment_myappnetwork postgres:15-bullseye psql -h deployment_myappdb_1 -U mysampleuser -d mysampledb
+
+uvicorn app.main:app --reload
+
+http://localhost:8000/docs
+
+http://localhost:33080/?pgsql=myappdb%3A5433&username=mysampleuser&db=mysampledb&ns=public&select=users
+
+
+
+
+docker run -it --rm --network host postgres:15-bullseye psql -h  127.0.0.1 -p 33032 -U mysampleuser -d mysampledb
+
+
+
+
+to check from terminal use psql:
+psql -h  127.0.0.1 -p 33033 -U mysampleuser -d mysampledb (if exposed extra)
+\dt 
+\q
+psql -h  127.0.0.1 -p 33032 -U mysampleuser -d mysampledb
+
+PostgreSQL » myappdb:5433 » mysampledb » public » Select: users (when 5433 is exposed)       
+
+
