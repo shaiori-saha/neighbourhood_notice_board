@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     
     class Config:
-        env_file = "C:\prac\\try_proj_002\myapp.env"
+        env_file = "C:\prac\proj_try_002\\neighbourhood_notice_board\myapp.env"
 
 
 settings = Settings()

@@ -10,7 +10,7 @@ services:
       - 33032:5432
       # - 33033:5433
     volumes:
-      - C:\prac\try_proj_002\deployment\postgres-db:/var/lib/postgresql/data
+      - C:\prac\proj_try_002\neighbourhood_notice_board\deployment\postgres-db:/var/lib/postgresql/data
     networks:
       - myappnetwork
     # command: -p 5433
