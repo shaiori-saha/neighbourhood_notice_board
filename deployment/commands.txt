@@ -23,3 +23,7 @@ psql -h  127.0.0.1 -p 33032 -U mysampleuser -d mysampledb
 PostgreSQL » myappdb:5433 » mysampledb » public » Select: users (when 5433 is exposed)       
 
 
+
+python -m pytest test_users.py
+
+(.venv) C:\prac\proj_try_002\neighbourhood_notice_board>python -m pytest tests\test_users.py
