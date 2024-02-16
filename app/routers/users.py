@@ -40,6 +40,7 @@ class UserUpdateRequest(BaseModel):
     email: Union[EmailStr, None] = None  # from pydantic
     created_at: Union[datetime, None] = None
     address: Union[str, None] = None
+    phone_numbers: Union[list[str], None] = None
 
 
 class UserResponse(BaseModel):
@@ -104,12 +105,55 @@ async def update_user(user:UserUpdateRequest, id: int, db: Session = Depends(get
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'user with id:{id} doesn\'t exist.')
     
+    user_dict = user.dict()
+    requested_phone_numbers = user_dict['phone_numbers']
+    logging.debug(f"requested phone numbers: {requested_phone_numbers}")
+    del user_dict['phone_numbers']
+    new_phone_numbers = list()
+    if user_dict['email']:
+        user_with_same_email = db.query(UserDao).filter(UserDao.email == user_dict['email']).all()
+        logging.debug(f"user_with_same_email: {user_with_same_email}")
+        if len(user_with_same_email)==1 and user_with_same_email[0].id==id:
+            del user_dict['email']
+        elif len(user_with_same_email)!=0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail = f"email_id {user_dict['email']} already exists")
+
+
+    try:
+        already_existing_phones_tuple = db.query(PhoneNumberDao.phone_number).filter(PhoneNumberDao.user_id == id).all()
+        already_existing_phones_numbers = [i[0] for i in already_existing_phones_tuple]
+        phones_to_delete = sorted(set(already_existing_phones_numbers)-set(requested_phone_numbers))
+        logging.debug(f"phones to delete: {phones_to_delete}")
+        if  phones_to_delete:
+            for delete_phone in phones_to_delete:
+                count_rows_deleted = db.query(PhoneNumberDao).filter(PhoneNumberDao.phone_number==delete_phone).delete()
+                if count_rows_deleted ==0:
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f'phone with number:{delete_phone} doesn\'t exist.')
+                db.commit()
+        phones_to_add = list(set(requested_phone_numbers)-set(already_existing_phones_numbers))
+        logging.debug(f"finally added ones will be: {phones_to_add}")
+        for phone_number in phones_to_add:
+            new_phone_number = PhoneNumberDao()
+            #new_phone_number.user_id = new_user.id
+            new_phone_number.phone_number = phone_number
+            new_phone_number.user_id = user_from_db.id
+            db.add(new_phone_number)
+            new_phone_numbers.append(new_phone_number)
+            db.commit()
+            db.refresh(new_phone_number)
+            #phone_number.user_id = user_from_db.id
+    except IntegrityError as e:
+        logging.warn(f"exception is {e}")
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail = f"phone_number {new_phone_number.phone_number} already exists")
     
-    for key, value in user.dict().items():
+
+
+    for key, value in user_dict.items():
         setattr(user_from_db, key, value) if value else None
     db.commit()
     
-    print(user_from_db.id)
     db.refresh(user_from_db)  # recieve change
     return user_from_db
 
