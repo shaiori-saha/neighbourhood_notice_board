@@ -2,7 +2,8 @@ import pytest
 import requests
 import pytest_asyncio
 
-from app.routers.users import UserCreateRequest, UserResponse, create_user
+from app.routers.users import  create_user
+from app.models import UserCreateRequest
 
 pytest_plugins = ('pytest_asyncio',)
 
@@ -37,9 +38,9 @@ def test_get_users():
 @pytest.mark.asyncio
 async def test_create_user():
     new_user = {
-        "name": "shah",
+        "name": "shahji",
         "password": "hatimi",
-        "email": "again848@exam.com",
+        "email": "again00@exam.com",
         "phone_numbers": []
     }
     res = requests.post('http://localhost:8000/users/', json=new_user)
@@ -50,7 +51,7 @@ async def test_create_user():
 async def test_update_user():
         new_user = {
         "id": 1,
-        "name": "sha shahi"
+        "name": "sha shahiii"
         }
         res = requests.put('http://localhost:8000/users/1', json=new_user)
         assert res.status_code == 200
@@ -58,7 +59,7 @@ async def test_update_user():
 @pytest.mark.asyncio
 async def test_delete_user():
         
-        res = requests.delete('http://localhost:8000/users/11')
+        res = requests.delete('http://localhost:8000/users/5')
         assert res.status_code == 200
 
 

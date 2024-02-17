@@ -10,58 +10,40 @@ from sqlalchemy.sql import text
 
 from ..database import get_db
 from ..schemas import User as UserDao
-from ..schemas import PhoneNumber as PhoneNumberDao
-from ..models import UserCreateRequest, UserUpdateRequest, UserResponse, PhoneNumberResponse
-
+from ..schemas import Notice as NoticeDao
+from ..models import NoticeCreateRequest, NoticeResponse
 
 
 router = APIRouter(
-    prefix="/users",
-    tags=['Users']
+    prefix="/notices",
+    tags=['Notices']
 )
 
 
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(user:UserCreateRequest, db: Session = Depends(get_db)):
-    """ Creates a User"""
-    logging.info(f"user craeted with id: {user}")
-    user_dict = user.dict()
-    phone_numbers = user_dict['phone_numbers']
-    del user_dict['phone_numbers']
-    new_user = UserDao(**user_dict)
-    new_phone_numbers = list()
-    try:
-        for phone_number in phone_numbers:
-            new_phone_number = PhoneNumberDao()
-            #new_phone_number.user_id = new_user.id
-            new_phone_number.phone_number = phone_number
-            db.add(new_phone_number)
-            new_phone_numbers.append(new_phone_number)
+@router.post("/", response_model=NoticeResponse, status_code=status.HTTP_201_CREATED)
+async def create_notice(notice:NoticeCreateRequest, db: Session = Depends(get_db)):
+    """ Creates a Notice"""
+    logging.info(f"notice craeted with id: {notice}")
+    notice_dict = notice.dict()
+    user_id = notice_dict['user_id']
+    del notice_dict['user_id']
+    new_notice = NoticeDao(**notice_dict)
+    user_from_db = db.query(UserDao).filter(UserDao.id == user_id).first()
+    if  user_from_db:
+        new_notice.user_id = user_id
+        print(f"notice has contents: {new_notice}")
+        db.add(new_notice)
         db.commit()
-    except IntegrityError as e:
-        logging.warn(f"exception is {e}")
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail = f"phone_number {phone_number} already exists")
-    
-    db.add(new_user)  # make change
-    try:
-        db.commit()  # save change
-    except IntegrityError as e:
-        logging.warn(f"exception is {e}")
-        # TODO: delete phone numbers
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail = f"email {user.email} already exists")
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'user with id:{user_id} doesn\'t exist.')
         
-    db.refresh(new_user)  # recieve change
-            
-    for phone_number in new_phone_numbers:
-        db.refresh(phone_number)
-        phone_number.user_id = new_user.id
-        db.commit()
+    db.refresh(new_notice)  # recieve change
 
-    return new_user
+    return new_notice
 
 
-@router.put("/{id}", response_model=UserResponse)
+'''@router.put("/{id}", response_model=UserResponse)
 async def update_user(user:UserUpdateRequest, id: int, db: Session = Depends(get_db)):
     """ Updates an existing User"""
     logging.info(f"user craeted with id: {user}")
@@ -158,3 +140,4 @@ def search_users(email: Union[str, None] = "", name: Union[str, None] = "", db: 
 
 
 # uvicorn app.main:app --reload
+'''

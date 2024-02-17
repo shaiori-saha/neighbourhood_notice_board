@@ -1,32 +1,51 @@
-from typing import Hashable, List
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import text
-from sqlalchemy.sql.sqltypes import TIMESTAMP
-
-from .database import Base
+from pydantic import BaseModel, EmailStr
+from typing import Union
+from datetime import datetime
 
 
-class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    password = Column(String, nullable=False)
-    created_at = Column(TIMESTAMP(timezone=True),
-                        nullable=False, server_default=text('now()'))
-    address = Column(String)
-    phone_numbers = relationship(
-        "PhoneNumber",
-        back_populates='user',
-        cascade='delete, delete-orphan, save-update',
-        passive_deletes=True
+class PhoneNumberResponse(BaseModel):
+    id: int
+    phone_number: str
 
-    ) # type: List[PhoneNumber]
+    class Config():
+        orm_mode = True
 
-class PhoneNumber(Base):
-    __tablename__ = "phone_numbers"
-    id = Column(Integer, primary_key=True, nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
-    phone_number = Column(String, nullable=False, unique=True, index=True)
-    user = relationship("User", back_populates="phone_numbers") # type: User
+class UserCreateRequest(BaseModel):
+    name: str
+    password: str
+    address: Union[str, None] = None
+    email: EmailStr
+    phone_numbers: Union[list[str], None] = None
+
+class UserUpdateRequest(BaseModel):
+    id: int
+    name: Union[str, None] = None
+    email: Union[EmailStr, None] = None  # from pydantic
+    created_at: Union[datetime, None] = None
+    address: Union[str, None] = None
+    phone_numbers: Union[list[str], None] = None
+
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: EmailStr  # from pydantic
+    created_at: datetime
+    address: Union[str, None] = None
+    phone_numbers: list[PhoneNumberResponse] = []
+
+    class Config():
+        orm_mode = True
+
+class NoticeCreateRequest(BaseModel):
+    content: str
+    user_id: int
+
+class NoticeResponse(BaseModel):
+    id:int
+    content: str
+    created_at: datetime
+    user_id: int
+
+    class Config():
+        orm_mode = True
