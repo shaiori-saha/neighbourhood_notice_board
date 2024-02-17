@@ -41,6 +41,10 @@ class NoticeCreateRequest(BaseModel):
     content: str
     user_id: int
 
+class NoticeUpdateRequest(BaseModel):
+    id: int
+    content: Union[str, None] = None
+
 class NoticeResponse(BaseModel):
     id:int
     content: str
