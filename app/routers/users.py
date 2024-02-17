@@ -11,6 +11,7 @@ from sqlalchemy.sql import text
 from ..database import get_db
 from ..schemas import User as UserDao
 from ..schemas import PhoneNumber as PhoneNumberDao
+from ..schemas import Street as StreetDao
 from ..models import UserCreateRequest, UserUpdateRequest, UserResponse, PhoneNumberResponse
 
 
@@ -28,8 +29,24 @@ async def create_user(user:UserCreateRequest, db: Session = Depends(get_db)):
     user_dict = user.dict()
     phone_numbers = user_dict['phone_numbers']
     del user_dict['phone_numbers']
+    street_name = user_dict['street_name']
+    del user_dict['street_name']
     new_user = UserDao(**user_dict)
     new_phone_numbers = list()
+
+    street_id =  db.query(StreetDao.id).filter(StreetDao.street_name == street_name).all()
+    if len(street_id)==0:
+        new_street = StreetDao()
+        new_street.street_name = street_name
+        db.add(new_street)
+        db.commit()
+        db.refresh(new_street)  # recieve change
+        print(f"new street created with id {new_street.id}")
+        new_user.street_id = new_street.id
+    else:
+        new_user.street_id = street_id[0].id
+    
+
     try:
         for phone_number in phone_numbers:
             new_phone_number = PhoneNumberDao()
@@ -57,6 +74,7 @@ async def create_user(user:UserCreateRequest, db: Session = Depends(get_db)):
         db.refresh(phone_number)
         phone_number.user_id = new_user.id
         db.commit()
+    #new_user['street_name'] = street_name
 
     return new_user
 

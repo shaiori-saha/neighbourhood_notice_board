@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 
-from .database import Base
+from .database import Base, get_db
 
 '''notice_user_association = Table(
     'notice_users',
@@ -33,8 +33,11 @@ class User(Base):
     ) # type: List[PhoneNumber]
 
     notices = relationship("Notice", back_populates="notice_writer") # type: List[Notice]
-
-
+    street_id = Column(Integer, ForeignKey('street.id', ondelete='CASCADE'))
+    house_number =  Column(String, nullable=False)
+    postal_code = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    
 class PhoneNumber(Base):
     __tablename__ = "phone_numbers"
     id = Column(Integer, primary_key=True, nullable=False)
@@ -50,3 +53,8 @@ class Notice(Base):
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     notice_writer = relationship("User", back_populates="notices") # type: User
+
+class Street(Base):
+    __tablename__ = "street"
+    id = Column(Integer, primary_key=True, nullable=False)
+    street_name = Column(String, nullable=False, index=True)

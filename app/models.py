@@ -1,7 +1,9 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from typing import Union
 from datetime import datetime
+from app.database import get_db
 
+from app.schemas import Street
 
 class PhoneNumberResponse(BaseModel):
     id: int
@@ -13,17 +15,27 @@ class PhoneNumberResponse(BaseModel):
 class UserCreateRequest(BaseModel):
     name: str
     password: str
-    address: Union[str, None] = None
+    #address: Union[str, None] = None
     email: EmailStr
     phone_numbers: Union[list[str], None] = None
+    street_name: Union[str, None] = None
+    house_number: Union[str, None] = None
+    postal_code: Union[str, None] = None
+    city: Union[str, None] = None
+
 
 class UserUpdateRequest(BaseModel):
     id: int
     name: Union[str, None] = None
     email: Union[EmailStr, None] = None  # from pydantic
     created_at: Union[datetime, None] = None
-    address: Union[str, None] = None
+    #address: Union[str, None] = None
     phone_numbers: Union[list[str], None] = None
+
+def get_street_name(street_id):
+    if street_id is None:
+        return ""
+    return get_db().__next__().query(Street).filter(Street.id == street_id).first().street_name
 
 
 class UserResponse(BaseModel):
@@ -31,11 +43,23 @@ class UserResponse(BaseModel):
     name: str
     email: EmailStr  # from pydantic
     created_at: datetime
-    address: Union[str, None] = None
+    #address: Union[str, None] = None
     phone_numbers: list[PhoneNumberResponse] = []
+    street_id: Union[int, None] = None
+    street_name: Union[str, None] = None
+    house_number: Union[str, None] = None
+    postal_code: Union[str, None] = None
+    city: Union[str, None] = None
+
+    @validator("street_name", always=True)
+    def set_street_name(cls, v, values, **kwargs):
+        """Set the eggs field based upon a spam value."""
+        return v or get_street_name(values.get("street_id"))
 
     class Config():
         orm_mode = True
+
+    
 
 class NoticeCreateRequest(BaseModel):
     content: str
