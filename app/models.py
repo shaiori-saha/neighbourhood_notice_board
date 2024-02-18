@@ -99,3 +99,11 @@ class ReactionResponse(BaseModel):
         orm_mode = True
         use_enum_values = True
 
+class NoticeReactionStatusResponse(BaseModel):
+    #reaction_counts_dict: Union[dict, None] = None
+    count_liked: Union[int, None] = None
+    count_disliked: Union[int, None] = None
+    count_no_reaction:Union [int, None] = None
+    class Config():
+        orm_mode = True
+        pass

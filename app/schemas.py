@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.schema import UniqueConstraint
 
 from .database import Base, get_db
 
@@ -71,3 +72,6 @@ class Reaction(Base):
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     notice_id = Column(Integer, ForeignKey('notice.id', ondelete='CASCADE'))
     reaction:ReactionChoicesDao  = Column(Enum(ReactionChoicesDao))
+    __table_args__ = (UniqueConstraint(user_id, notice_id),)
+
+
