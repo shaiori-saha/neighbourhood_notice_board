@@ -31,6 +31,7 @@ async def create_notice(notice:NoticeCreateRequest, db: Session = Depends(get_db
     user_from_db = db.query(UserDao).filter(UserDao.id == user_id).first()
     if  user_from_db:
         new_notice.user_id = user_id
+        new_notice.street_id = user_from_db.street_id
         print(f"notice has contents: {new_notice}")
         db.add(new_notice)
         db.commit()
@@ -82,6 +83,7 @@ async def update_notice(notice:NoticeUpdateRequest, id: int, db: Session = Depen
 
     for key, value in notice_dict.items():
         setattr(notice_from_db, key, value) if value else None
+    notice_from_db.created_at = datetime.now()
     db.commit()
     
     db.refresh(notice_from_db)

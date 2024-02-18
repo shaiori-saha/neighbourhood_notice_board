@@ -29,23 +29,36 @@ def test_get_users():
       }
     ]
   }]
-
-    print(res.json())
-
+    
     assert res.status_code == 200
     #assert res.json() == expected_response
+
+
+@pytest.mark.asyncio
+async def test_delete_user():
+        
+        res = requests.delete('http://localhost:8000/users/14')
+        assert res.status_code == 200
+
 
 @pytest.mark.asyncio
 async def test_create_user():
     new_user = {
-        "name": "shahji",
+        "name": "ttt",
         "password": "hatimi",
-        "email": "again00@exam.com",
-        "phone_numbers": []
+        "email": "tttng@exam.com",
+        "phone_numbers": ["00034"],
+        "street_name": "abc",
+        "house_number":"23",
+        "postal_code": "1235",
+        "city": "qwe"
+        
     }
     res = requests.post('http://localhost:8000/users/', json=new_user)
-    
+    result_response = res.json()
+    print(f"check city: {result_response["city"]}")
     assert res.status_code == 201
+    assert result_response["city"]==new_user["city"]
 
 @pytest.mark.asyncio
 async def test_update_user():
@@ -53,13 +66,10 @@ async def test_update_user():
         "id": 1,
         "name": "sha shahiii"
         }
-        res = requests.put('http://localhost:8000/users/1', json=new_user)
-        assert res.status_code == 200
+        res = requests.put('http://localhost:8000/users/1', json=new_user)    
+        result_response = res.json()
 
-@pytest.mark.asyncio
-async def test_delete_user():
-        
-        res = requests.delete('http://localhost:8000/users/5')
         assert res.status_code == 200
+        assert result_response["name"]==new_user["name"]
 
 

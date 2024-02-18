@@ -52,6 +52,8 @@ class Notice(Base):
     content = Column(String, nullable=False, index=True)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
+    street_id = Column(Integer, ForeignKey('street.id', ondelete='CASCADE'))
+
     notice_writer = relationship("User", back_populates="notices") # type: User
 
 class Street(Base):
