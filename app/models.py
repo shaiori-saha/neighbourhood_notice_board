@@ -1,3 +1,4 @@
+import enum
 from pydantic import BaseModel, EmailStr, validator
 from typing import Union
 from datetime import datetime
@@ -77,3 +78,24 @@ class NoticeResponse(BaseModel):
 
     class Config():
         orm_mode = True
+
+class ReactionChoices(str, enum.Enum):
+    LIKED = 'LIKED'
+    DISLIKED = 'DISLIKED'
+    NO_REACTION = 'NO_REACTION'
+    
+class ReactionCreateRequest(BaseModel):
+    user_id: int
+    notice_id: int
+    reaction: str
+
+class ReactionResponse(BaseModel):
+    id: int
+    user_id: int
+    notice_id: int
+    reaction: ReactionChoices
+    class Config():
+        allow_population_by_field_name = True
+        orm_mode = True
+        use_enum_values = True
+

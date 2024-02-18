@@ -1,5 +1,6 @@
+import enum
 from typing import Hashable, List
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -13,7 +14,10 @@ from .database import Base, get_db
     Column('user_id', Integer, ForeignKey('users.id'))
 )'''
 
-
+class ReactionChoicesDao(str, enum.Enum):
+    LIKED = 'LIKED'
+    DISLIKED = 'DISLIKED'
+    NO_REACTION = 'NO_REACTION'
 
 class User(Base):
     __tablename__ = "users"
@@ -60,3 +64,10 @@ class Street(Base):
     __tablename__ = "street"
     id = Column(Integer, primary_key=True, nullable=False)
     street_name = Column(String, nullable=False, index=True)
+
+class Reaction(Base):
+    __tablename__ = "reaction"
+    id = Column(Integer, primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    notice_id = Column(Integer, ForeignKey('notice.id', ondelete='CASCADE'))
+    reaction:ReactionChoicesDao  = Column(Enum(ReactionChoicesDao))
