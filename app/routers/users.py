@@ -50,13 +50,14 @@ async def create_user(user: UserCreateRequest, db: Session = Depends(get_db)):
         new_user.street_id = street_id[0].id
 
     try:
-        for phone_number in phone_numbers:
-            new_phone_number = PhoneNumberDao()
-            # new_phone_number.user_id = new_user.id
-            new_phone_number.phone_number = phone_number
-            db.add(new_phone_number)
-            new_phone_numbers.append(new_phone_number)
-        db.commit()
+        if phone_numbers:
+            for phone_number in phone_numbers:
+                new_phone_number = PhoneNumberDao()
+                # new_phone_number.user_id = new_user.id
+                new_phone_number.phone_number = phone_number
+                db.add(new_phone_number)
+                new_phone_numbers.append(new_phone_number)
+            db.commit()
     except IntegrityError as e:
         logging.warn(f"exception is {e}")
         db.rollback()

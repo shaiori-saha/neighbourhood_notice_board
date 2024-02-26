@@ -32,6 +32,8 @@ class UserUpdateRequest(BaseModel):
     created_at: Union[datetime, None] = None
     #address: Union[str, None] = None
     phone_numbers: Union[list[str], None] = None
+    street_name: Union[str, None] = None
+    house_number: Union[str, None] = None
 
 def get_street_name(street_id):
     if street_id is None:
