@@ -23,6 +23,7 @@ class UserCreateRequest(BaseModel):
     house_number: Union[str, None] = None
     postal_code: Union[str, None] = None
     city: Union[str, None] = None
+    # add validator to check name lengths
 
 
 class UserUpdateRequest(BaseModel):

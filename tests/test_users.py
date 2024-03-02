@@ -12,111 +12,108 @@ from app.schemas import User as UserDao
 
 pytest_plugins = ('pytest_asyncio',)
 
-
-'''def test_get_users():
-
-    res = requests.get('http://localhost:8000/users/search/')
-
-    expected_response =[{
-    "id": 1,
-    "name": "sha",
-    "email": "petuk@example.com",
-    "created_at": "2024-02-11T18:04:17.732550+00:00",
-    "address": "berlin",
-    "phone_numbers": [
-      {
-        "id": 1,
-        "phone_number": "12345"
-      },
-      {
-        "id": 2,
-        "phone_number": "34567"
-      }
-    ]
-  }]
-    
-    assert res.status_code == 200
-    #assert res.json() == expected_response
-
+@pytest.fixture
+def new_user():
+  # create an user as a fixture to check several cases for create, update, delete
+  new_user = {
+      "name": "helena",
+      "password": "exclamation",
+      "email": "helena12@exam.com",
+      "phone_numbers": ["9122333", "23345000"],
+      "street_name": "new road2",
+      "house_number":"40",
+      "postal_code": "505055",
+      "city": "paris"
+      
+  }
+  res = requests.post('http://localhost:8000/users/', json=new_user)
+  result_response = res.json()
+  return result_response
 
 @pytest.mark.asyncio
-async def test_delete_user():
-        
-        res = requests.delete('http://localhost:8000/users/14')
-        assert res.status_code == 200'''
-
-
-'''@pytest.mark.asyncio
-async def test_create_update_delete_user():
-    # create an user
-    new_user = {
-        "name": "helena",
-        "password": "hatimi",
-        "email": "helena12@exam.com",
+async def test_create_user_with_detailed_assertion():
+  new_user = {
+        "name": "leo caprio",
+        "password": "titanic",
+        "email": "sunkensheep@end.com",
         "phone_numbers": ["9122333", "23345000"],
-        "street_name": "new road2",
-        "house_number":"40",
-        "postal_code": "505",
-        "city": "paris"
+        "street_name": "new iceberg",
+        "house_number":"11",
+        "postal_code": "76077",
+        "city": "new york"
         
     }
-    res = requests.post('http://localhost:8000/users/', json=new_user)
-    result_response = res.json()
-    new_user_id = result_response["id"]
-    assert res.status_code == 201
-    assert result_response["city"]==new_user["city"]
-    print(f"check city: {result_response["city"]}")
-    assert result_response["postal_code"]==new_user["postal_code"]
-    assert result_response["house_number"]==new_user["house_number"]
-    print(f"phone numbers added: {result_response["phone_numbers"]}")
-    assert new_user["phone_numbers"]== [result_response["phone_numbers"][i]["phone_number"] for 
-                                        i in range(len(result_response["phone_numbers"]))]
-    assert result_response["email"]==new_user["email"]
-    assert result_response["name"]==new_user["name"]
+  res = requests.post('http://localhost:8000/users/', json=new_user)
+  result_response = res.json()
+  new_user_id = result_response["id"]
+  assert res.status_code == 201
+  assert result_response["city"]==new_user["city"]
+  print(f"check city: {result_response["city"]}")
+  assert result_response["postal_code"]==new_user["postal_code"]
+  assert result_response["house_number"]==new_user["house_number"]
+  print(f"phone numbers added: {result_response["phone_numbers"]}")
+  assert new_user["phone_numbers"]== [result_response["phone_numbers"][i]["phone_number"] for 
+                                      i in range(len(result_response["phone_numbers"]))]
+  assert result_response["email"]==new_user["email"]
+  assert result_response["name"]==new_user["name"]
+  delete_res = requests.delete(f"http://localhost:8000/users/{new_user_id}")
 
-   # update the user
-    fields_to_update ={
-          "id": new_user_id,
-          #"street_name": "ajab gali", # need to add in put
-          "house_number":"10"
-          }
-    updated_response = requests.put(f"http://localhost:8000/users/{new_user_id}", json=fields_to_update)    
-    updated_response_result = updated_response.json()
-
-    assert updated_response.status_code == 200
-    assert updated_response_result["house_number"]==fields_to_update["house_number"]
-
-    delete_res = requests.delete(f"http://localhost:8000/users/{new_user_id}")
-    assert delete_res.status_code == 200'''
 
 @pytest.mark.asyncio
-async def test_user_with_duplicate_email():
-    with pytest.raises(Exception) as e_info:
-      new_user = {
+async def test_update_user(new_user):
+  #new_user = create_user_for_fixture()
+  new_user_id = new_user["id"]
+
+  fields_to_update = {
+      "id": new_user_id,
+      "name": "sail againS"
+      }
+  res = requests.put(f"http://localhost:8000/users/{new_user_id}", json=fields_to_update)    
+  result_response = res.json()
+
+  assert res.status_code == 200
+  assert result_response["name"]==fields_to_update["name"]
+
+  response_from_db = requests.get(f"http://localhost:8000/users/{new_user_id}").json()
+  assert response_from_db['name'] == fields_to_update['name']
+
+  delete_res = requests.delete(f"http://localhost:8000/users/{new_user_id}")
+
+
+@pytest.mark.asyncio
+async def test_delete_user(new_user):
+  #new_user = create_user_for_fixture()
+  new_user_id = new_user["id"]
+  res = requests.delete(f"http://localhost:8000/users/{new_user_id}")
+  assert res.status_code == 200
+
+  res = requests.get(f"http://localhost:8000/users/{new_user_id}")
+  result_response = res.json()
+  assert res.status_code == 404
+  assert result_response['detail'] == f"user with id:{new_user_id} doesn't exist."
+
+
+@pytest.mark.asyncio
+async def test_user_with_duplicate_email(new_user):
+  new_user_1_id = new_user["id"]
+
+  new_user_2 = {
         "name": "helenas",
         "password": "hatiim",
-        "email": "eso@example.com",
+        "email": new_user["email"],
         "street_name": "new road2",
         "house_number":"40",
         "postal_code": "505",
         "city": "paris"
         
        }
-      res = requests.post('http://localhost:8000/users/', json=new_user)
-      result_response = res.json()
-      assert res.status_code == 201
-    print(e_info)
-
-'''@pytest.mark.asyncio
-async def test_update_user():
-        new_user = {
-        "id": 1,
-        "name": "sha shahiii"
-        }
-        res = requests.put('http://localhost:8000/users/1', json=new_user)    
-        result_response = res.json()
-
-        assert res.status_code == 200
-        assert result_response["name"]==new_user["name"]'''
-
-
+  res = requests.post('http://localhost:8000/users/', json=new_user_2)
+  result_response = res.json()
+  assert res.status_code == 400
+  assert result_response['detail'] == f"email {new_user["email"]} already exists"
+  print(f"response message {result_response}")
+  delete_res = requests.delete(f"http://localhost:8000/users/{new_user_1_id}")
+  user_2_res = requests.post('http://localhost:8000/users/', json=new_user_2)  
+  assert user_2_res.status_code == 201
+  user_2_response = user_2_res.json()
+  delete_res_user_2 = requests.delete(f"http://localhost:8000/users/{user_2_response['id']}")
