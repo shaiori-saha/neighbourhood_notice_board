@@ -60,12 +60,19 @@ def get_count_of_reactions_of_notice(notice_id: int, db: Session = Depends(get_d
     )
     # print(dict(reaction_counts))
     reaction_counts_dict = {}
-    reaction_counts_dict[reaction_counts[0][0].value] = reaction_counts[0][1]
-    reaction_counts_dict[reaction_counts[1][0].value] = reaction_counts[1][1]
     count_status = NoticeReactionStatusResponse()
-    count_status.count_liked = reaction_counts[0][1]
-    count_status.count_disliked = reaction_counts[1][1]
-    # print(reaction_counts_dict)
+
+    if len(reaction_counts)>1:
+        reaction_counts_dict[reaction_counts[0][0].value] = reaction_counts[0][1]
+        reaction_counts_dict[reaction_counts[1][0].value] = reaction_counts[1][1]
+        count_status.count_liked = reaction_counts[0][1]
+        count_status.count_disliked = reaction_counts[1][1]
+    if len(reaction_counts)==1:
+        reaction_counts_dict[reaction_counts[0][0].value] = reaction_counts[0][1]
+        count_status.count_disliked = reaction_counts[0][1]
+
+
+    #print(count_status)
     # return  {"reaction_counts": reaction_counts_dict}
 
     return count_status
@@ -95,7 +102,13 @@ def create_reactions_of_notices(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"notice with id:{reaction.notice_id} doesn't exist.",
         )
-    # to do check street for notice and user
+    # check user and writer of notice are of same street, otherwise notice is not visible
+    if notice_from_db.street_id != user_from_db.street_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"user cannot react to the post.",
+        )
+
     combo_user_notice = (
         db.query(ReactionDao)
         .filter(
@@ -116,3 +129,14 @@ def create_reactions_of_notices(
         db.commit()
         db.refresh(new_reaction)
         return new_reaction
+
+@router.delete("/{id}")
+async def delete_reaction(id: int, db: Session = Depends(get_db)):
+    count_rows_deleted = db.query(ReactionDao).filter(ReactionDao.id == id).delete()
+    if count_rows_deleted == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"reaction with id:{id} doesn't exist.",
+        )
+    db.commit()
+    return

@@ -61,7 +61,7 @@ def new_user_3():
   return result_response
 
 @pytest.mark.asyncio
-async def test_create_notice_reaction_with_detailed_assertion(new_user):
+async def test_create_notice_with_detailed_assertion(new_user):
   user_id  = new_user["id"]
   new_notice = {
         "content": "new sprint planning",
@@ -87,7 +87,79 @@ async def test_get_notices_from_neighbours(new_notice_1, new_notice_2, new_user_
   assert len(list_of_non_neigh.json()) == 0
   assert len(list_of_notices_for_neigh_1.json()) == 2
 
-  print(list_of_notices_for_neigh_1.json())
   tear_down(new_notice_1['id'], new_notice_1['user_id'])
   tear_down(new_notice_2['id'], new_notice_2['user_id'])
   delete_res = requests.delete(f"{BASE_URL}/users/{non_neighbour_user_id}")
+
+@pytest.mark.asyncio
+async def test_create_reactions_of_notices(new_notice_1, new_notice_2):
+  neighbour_1_id = new_notice_1['user_id']
+  neighbour_2_id = new_notice_2['user_id']
+
+  reaction_by_neigh_2 = {
+    "user_id": neighbour_2_id,
+    "notice_id": new_notice_1['id'],
+    "reaction": "LIKED"
+        
+    }
+  reaction_by_neigh_2_self_like = {
+    "user_id": neighbour_2_id,
+    "notice_id": new_notice_2['id'],
+    "reaction": "LIKED"
+        
+    }
+  reaction_by_neigh_1 = {
+    "user_id": neighbour_1_id,
+    "notice_id": new_notice_2['id'],
+    "reaction": "DISLIKED"
+        
+    }
+  
+  reaction_by_neigh_2_self_dislike = {
+    "user_id": neighbour_2_id,
+    "notice_id": new_notice_2['id'],
+    "reaction": "DISLIKED"
+        
+    }
+  reaction_from_neigh_2 = requests.post(f"{BASE_URL}/interactions/user/{neighbour_2_id}/notice/{new_notice_1['id']}", 
+                                        json=reaction_by_neigh_2)
+  res_by_neigh_2_self_like = requests.post(f"{BASE_URL}/interactions/user/{neighbour_2_id}/notice/{new_notice_2['id']}", 
+                                        json=reaction_by_neigh_2_self_like)
+  
+  reaction_from_neigh_1 = requests.post(f"{BASE_URL}/interactions/user/{neighbour_1_id}/notice/{new_notice_2['id']}", 
+                                        json=reaction_by_neigh_1)
+  
+  reaction_response_neigh_2_like = reaction_from_neigh_2.json()
+  reaction_response_neigh_2_like_id = reaction_response_neigh_2_like["id"]
+  assert reaction_from_neigh_2.status_code == 201
+  assert reaction_response_neigh_2_like['reaction'] == reaction_by_neigh_2['reaction']
+
+  reaction_response_neigh_2_dislike = res_by_neigh_2_self_like.json()
+  reaction_response_neigh_2_dislike_id = reaction_response_neigh_2_dislike["id"]
+
+  reaction_response_neigh_1_like = reaction_from_neigh_1.json()
+  reaction_response_neigh_1_dislike_id = reaction_response_neigh_1_like["id"]
+
+  reaction_count_res = requests.get(f"{BASE_URL}/interactions/status/notice/{new_notice_2['id']}")
+  reaction_status = reaction_count_res.json()
+  assert reaction_status['count_liked'] == 1
+  assert reaction_status['count_disliked'] == 1
+
+  res_by_neigh_2_self_dislike = requests.post(f"{BASE_URL}/interactions/user/{neighbour_2_id}/notice/{new_notice_2['id']}", 
+                                        json=reaction_by_neigh_2_self_dislike)
+  reaction_response_neigh_2_self_dislike = res_by_neigh_2_self_dislike.json()
+  reaction_response_neigh_2_self_dislike_id = reaction_response_neigh_2_self_dislike["id"]
+  
+  reaction_count_res_self = requests.get(f"{BASE_URL}/interactions/status/notice/{new_notice_2['id']}")
+  reaction_status_self = reaction_count_res_self.json()
+  print(reaction_status_self)
+  #assert reaction_status_self['count_liked'] == 0
+  assert reaction_status_self['count_disliked'] == 2
+
+  delete_reaction_1 = requests.delete(f"{BASE_URL}/interactions/{reaction_response_neigh_2_like_id}")
+  delete_reaction_2 = requests.delete(f"{BASE_URL}/interactions/{reaction_response_neigh_2_dislike_id}")
+  delete_reaction_3 = requests.delete(f"{BASE_URL}/interactions/{reaction_response_neigh_1_dislike_id}")
+  delete_reaction_4 = requests.delete(f"{BASE_URL}/interactions/{reaction_response_neigh_2_self_dislike_id}")
+  tear_down(new_notice_1['id'], new_notice_1['user_id'])
+  tear_down(new_notice_2['id'], new_notice_2['user_id'])
+
