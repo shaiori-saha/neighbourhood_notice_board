@@ -13,6 +13,8 @@ A simple python web app using Fast API.
  - Docker: To run the database and later on the application.
  - Postgres: Database
 ## Design
+![Entity Relationship diagram](documentation/neighbour_hood_notice_board.png)
+
 ## API
 
 [Open API](documentation/openapi.json) swagger API definitions are available in documentation directory.
