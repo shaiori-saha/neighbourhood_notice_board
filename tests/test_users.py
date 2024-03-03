@@ -30,6 +30,25 @@ def new_user():
   result_response = res.json()
   return result_response
 
+@pytest.fixture
+def new_user_2():
+  # create an user as a fixture to check several cases for create, update, delete
+  new_user = {
+      "name": "inhale",
+      "password": "exhale",
+      "email": "inhale12@exam.com",
+      "phone_numbers": ["70000044"],
+      "street_name": "new road2",
+      "house_number":"458",
+      "postal_code": "505055",
+      "city": "paris"
+      
+  }
+  res = requests.post('http://localhost:8000/users/', json=new_user)
+  result_response = res.json()
+  return result_response
+
+
 @pytest.mark.asyncio
 async def test_create_user_with_detailed_assertion():
   new_user = {
