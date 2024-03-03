@@ -12,8 +12,3 @@ app = FastAPI()
 app.include_router(users.router)
 app.include_router(notices.router)
 app.include_router(interactions.router)
-
-
-@ app.get("/")
-async def root():
-    return {"message": "on going"}

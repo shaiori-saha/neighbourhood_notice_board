@@ -1,5 +1,5 @@
 from pydantic import BaseSettings
-
+import os
 
 class Settings(BaseSettings):
     # db
@@ -11,7 +11,8 @@ class Settings(BaseSettings):
 
     
     class Config:
-        env_file = "C:\prac\proj_try_002\\neighbourhood_notice_board\myapp.env"
+        cwd = os.getcwd()
+        env_file = cwd + "\deployment\myapp.env"
 
 
 settings = Settings()
