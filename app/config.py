@@ -3,16 +3,17 @@ import os
 
 class Settings(BaseSettings):
     # db
-    db_host: str
-    db_port: str
-    db_pass: str
-    db_name: str
-    db_username: str
+    db_host: str = os.getenv("DB_HOST")
+    db_port: str = os.getenv("DB_PORT")
+    db_pass: str = os.getenv("DB_PASS")
+    db_name: str = os.getenv("DB_NAME")
+    db_username: str = os.getenv("DB_USERNAME")
 
     
-    class Config:
-        cwd = os.getcwd()
-        env_file = cwd + "\deployment\myapp.env"
+    # class Config:
+    #     cwd = os.getcwd()
+    #     env_file = cwd + "\deployment\myapp.env"
+    
 
 
 settings = Settings()

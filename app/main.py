@@ -2,9 +2,9 @@ from fastapi import FastAPI
 
 from .routers import  users, notices, interactions
 from . import schemas
-from .database import engine
+from .database import retry_connect_to_db
 
-schemas.Base.metadata.create_all(bind=engine)
+schemas.Base.metadata.create_all(bind=retry_connect_to_db())
 
 
 app = FastAPI()

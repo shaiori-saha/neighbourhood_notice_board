@@ -22,5 +22,20 @@ services:
       - 33080:8080
     networks:
       - myappnetwork
+
+  mynoticeapp:
+    image: noticeapp:latest
+    environment:
+      DB_HOST: myappdb
+      DB_PORT: 5432
+      DB_PASS: mysamplepwd
+      DB_NAME: mysampledb
+      DB_USERNAME: mysampleuser
+    depends_on:
+      - myappdb
+    ports:
+      - 8085:80
+    networks:
+      - myappnetwork
 networks:
   myappnetwork:
