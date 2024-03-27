@@ -14,3 +14,4 @@ spec:
       mountPath: /usr/share/nginx/html
   #hostNetwork: true
   #dnsPolicy: Default
+  # todo add for noticeboard app
