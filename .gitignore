@@ -3,5 +3,3 @@ __pycache__/
 deployment/postgres-db
 .venv
 shai_kube/commands.txt
-documentation/neighbour_hood_notice_board.png
-documentation/neighbour_hood_notice_board.drawio
