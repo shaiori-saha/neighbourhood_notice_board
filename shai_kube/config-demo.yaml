@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notice-config-map-demo
+data:
+  # property-like keys; each key maps to a simple value
+  DB_HOST: "192.168.178.29"
+  DB_PORT: "33032"
+  DB_NAME: "mysampledb"
+  DB_USERNAME: "mysampleuser"

@@ -13,7 +13,7 @@ A simple python web app using Fast API.
  - Docker: To run the database and later on the application.
  - Postgres: Database
 ## Design
-![Entity Relationship diagram](documentation/neighbour_hood_notice_board.png)
+![Entity Relationship diagram](documentation/notice_board_erd.jpg)
 
 ## API
 
